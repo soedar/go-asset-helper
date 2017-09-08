@@ -90,6 +90,7 @@ type Static struct {
 	mappingBuilder MappingBuilder
 
 	sriCache map[string]string
+	cdnHost  string
 }
 
 // NewStatic creates an instance of static, which can be then used to attach helper functions to templates.
@@ -131,7 +132,7 @@ func (st *Static) ScriptTag(path string, attrs ...string) (template.HTML, error)
 		return "", err
 	}
 	updateMap(defaultAttrMap, attrMap)
-	defaultAttrMap["src"] = st.urlPrefix + st.mapping.Get(path)
+	defaultAttrMap["src"] = st.cdnHost + "/" + st.urlPrefix + st.mapping.Get(path)
 
 	if st.useSri {
 		hash, err := st.getSriHash(path)
@@ -153,7 +154,7 @@ func (st *Static) LinkTag(path string, attrs ...string) (template.HTML, error) {
 		return "", err
 	}
 	updateMap(defaultAttrMap, attrMap)
-	defaultAttrMap["href"] = st.urlPrefix + st.mapping.Get(path)
+	defaultAttrMap["href"] = st.cdnHost + "/" + st.urlPrefix + st.mapping.Get(path)
 
 	if st.useSri {
 		hash, err := st.getSriHash(path)
@@ -289,6 +290,10 @@ func WithUseMinified(minified bool) optionSetter {
 // for subsequent requests.
 func WithUseSri(sri bool) optionSetter {
 	return func(st *Static) { st.useSri = sri }
+}
+
+func WithCdnHost(cdnHost string) optionSetter {
+	return func(st *Static) { st.cdnHost = cdnHost }
 }
 
 func attrSliceToMap(attrsSlice []string) (map[string]string, error) {
